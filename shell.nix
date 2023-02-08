@@ -4,5 +4,7 @@ pkgs.mkShell {
         haskell.compiler.ghc924
         haskellPackages.haskell-language-server
         cabal-install
+        zlib
+        ormolu
     ];
 }
