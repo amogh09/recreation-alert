@@ -67,13 +67,15 @@ library
     import:           warnings, extensions
 
     -- Modules exported by the library.
-    exposed-modules:  MyLib
+    exposed-modules:
+        MyLib,
+        Recreation.Types,
+        Recreation.Client
 
     -- Modules included in this library but not exported.
     other-modules:
         Recreation.Predicate,
-        Recreation.Class,
-        Recreation.Types
+        Recreation.Class
 
     build-depends:
         base ^>=4.16.3.0,
@@ -134,10 +136,18 @@ test-suite recreation-alert-test
     -- Directories containing source files.
     hs-source-dirs:   test
 
+    other-modules:
+        Recreation.ClientSpec
+
     -- The entrypoint to the test suite.
-    main-is:          Main.hs
+    main-is:          Spec.hs
+
+    build-tool-depends: hspec-discover:hspec-discover ^>=2.10.6
 
     -- Test dependencies.
     build-depends:
         base ^>=4.16.3.0,
+        hspec ^>=2.10.6,
+        bytestring ^>=0.11.3.1,
+        aeson ^>=2.0.3.0,
         recreation-alert

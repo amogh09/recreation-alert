@@ -1,10 +1,9 @@
-{ pkgs ? import <nixpkgs> {} }:
+{ pkgs ? import <nixpkgs> { } }:
 pkgs.mkShell {
-    nativeBuildInputs = with pkgs; [
-        haskell.compiler.ghc924
-        haskellPackages.haskell-language-server
-        cabal-install
-        zlib
-        ormolu
-    ];
+  nativeBuildInputs = with pkgs; [
+    (haskellPackages.ghcWithPackages
+      (pkgs: with pkgs;
+      [ cabal-install haskell-language-server ormolu ]))
+    zlib
+  ];
 }

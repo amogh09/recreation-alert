@@ -1,0 +1,31 @@
+{
+    "availabilities": {
+        "2023-05-25T00:00:00Z": "Not Reservable Management",
+        "2023-05-26T00:00:00Z": "Not Reservable Management",
+        "2023-05-27T00:00:00Z": "Not Reservable Management",
+        "2023-05-28T00:00:00Z": "Not Reservable Management",
+        "2023-05-29T00:00:00Z": "Not Reservable Management",
+        "2023-05-30T00:00:00Z": "Not Reservable Management",
+        "2023-05-31T00:00:00Z": "Not Reservable Management"
+    },
+    "campsite_id": "2558",
+    "campsite_reserve_type": "Site-Specific",
+    "campsite_rules": null,
+    "campsite_type": "MANAGEMENT",
+    "capacity_rating": "Single",
+    "loop": "A-F",
+    "max_num_people": 8,
+    "min_num_people": 1,
+    "quantities": {
+        "2023-05-25T00:00:00Z": 1,
+        "2023-05-26T00:00:00Z": 1,
+        "2023-05-27T00:00:00Z": 1,
+        "2023-05-28T00:00:00Z": 1,
+        "2023-05-29T00:00:00Z": 1,
+        "2023-05-30T00:00:00Z": 1,
+        "2023-05-31T00:00:00Z": 1
+    },
+    "site": "D014",
+    "supplemental_camping": null,
+    "type_of_use": "Overnight"
+}

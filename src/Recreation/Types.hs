@@ -3,7 +3,7 @@ module Recreation.Types where
 import Data.Time (Day)
 
 data Availability = Available | NotAvailable
-  deriving (Show)
+  deriving (Show, Eq)
 
 type CampgroundId = String
 
@@ -16,7 +16,7 @@ data Campsite = Campsite
     site :: !Site,
     availabilities :: !Availabilities
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 mapAvailabilities :: (Availabilities -> Availabilities) -> Campsite -> Campsite
 mapAvailabilities f c = c {availabilities = f (availabilities c)}
