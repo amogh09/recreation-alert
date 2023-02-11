@@ -82,7 +82,9 @@ library
         bytestring ^>=0.11.3.1,
         uri-encode ^>=1.5.0.7,
         containers ^>=0.6.5.1,
+        exceptions ^>=0.10.7,
         http-types ^>=0.12.3,
+        unliftio ^>=0.2.23.0,
         aeson ^>=2.0.3.0,
         time ^>=1.11.1.1,
         http-conduit ^>=2.3.8
