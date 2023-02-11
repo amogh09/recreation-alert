@@ -86,7 +86,7 @@ library
         http-types ^>=0.12.3,
         unliftio ^>=0.2.23.0,
         aeson ^>=2.0.3.0,
-        time ^>=1.11.1.1,
+        time ^>=1.12.2,
         http-conduit ^>=2.3.8
 
     -- Directories containing source files.
@@ -103,7 +103,8 @@ executable recreation-alert
     main-is:          Main.hs
 
     -- Modules included in this executable, other than Main.
-    -- other-modules:
+    other-modules:
+        Env
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:

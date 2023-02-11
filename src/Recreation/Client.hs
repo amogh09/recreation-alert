@@ -1,20 +1,31 @@
-module Recreation.Client (toCampsite, ApiCampsite) where
+module Recreation.Client (toCampsite, ApiCampsite, fetchCampgroundForRange) where
 
-import Control.Monad.Catch (MonadThrow)
+import Control.Monad.Catch (MonadThrow (throwM))
 import Data.Aeson (FromJSON)
 import Data.Bifunctor (Bifunctor (bimap, first))
 import qualified Data.ByteString.Char8 as BC8
 import Data.Map (Map)
 import qualified Data.Map as Map
+import qualified Data.Set as Set
 import Data.Time
-import Data.Time.Format.ISO8601 (ISO8601 (iso8601Format), formatParseM, iso8601ParseM, iso8601Show)
+  ( Day,
+    DayPeriod (dayPeriod),
+    UTCTime (UTCTime, utctDay),
+    defaultTimeLocale,
+    formatTime,
+  )
+import Data.Time.Calendar.Month (Month, fromMonthDayValid)
+import Data.Time.Format.ISO8601 (iso8601ParseM)
 import GHC.Generics (Generic)
 import Network.HTTP.Client.Conduit (Request, setQueryString, setRequestCheckStatus)
 import Network.HTTP.Simple (getResponseBody, httpJSON, parseRequest)
-import Network.URI.Encode (encodeByteString)
-import qualified Network.URI.Encode as URI
+import Recreation.Class (EndDate, StartDate)
 import Recreation.Types
-import UnliftIO
+  ( Availability (..),
+    CampgroundId,
+    Campsite (Campsite),
+  )
+import UnliftIO (fromEither, stringException)
 
 data ApiCampsite = ApiCampsite
   { campsite_id :: !String,
@@ -23,7 +34,7 @@ data ApiCampsite = ApiCampsite
   }
   deriving (Show, Generic)
 
-data ApiCampground = ApiCampsites
+newtype ApiCampground = ApiCampsites
   { campsites :: Map String ApiCampsite
   }
   deriving (Show, Generic)
@@ -35,21 +46,36 @@ instance FromJSON ApiCampground
 dateFormat :: String
 dateFormat = "%FT%T.000Z"
 
-fetchCampground :: CampgroundId -> Day -> IO [Campsite]
-fetchCampground cid day =
-  fetchApiCampground cid day
+monthsInRange :: StartDate -> EndDate -> [Month]
+monthsInRange s e = uniqAsc . fmap dayPeriod $ [s .. e]
+
+uniqAsc :: (Eq a, Ord a) => [a] -> [a]
+uniqAsc = Set.toAscList . Set.fromList
+
+fetchCampgroundForRange :: CampgroundId -> Day -> Day -> IO [Campsite]
+fetchCampgroundForRange cid s e =
+  fmap mconcat . mapM (fetchCampground cid) $ monthsInRange s e
+
+fetchCampground :: CampgroundId -> Month -> IO [Campsite]
+fetchCampground cid month =
+  fetchApiCampground cid month
     >>= fromEither . first stringException . apiCampgroundToCampsites
 
-fetchApiCampground :: CampgroundId -> Day -> IO ApiCampground
-fetchApiCampground cid day =
-  fetchCampgroundReq cid day >>= fmap getResponseBody . httpJSON
+fetchApiCampground :: CampgroundId -> Month -> IO ApiCampground
+fetchApiCampground cid month =
+  fetchCampgroundReq cid month >>= fmap getResponseBody . httpJSON
 
 fetchCampgroundReq ::
-  MonadThrow m => CampgroundId -> Day -> m Request
-fetchCampgroundReq cid day = do
+  MonadThrow m => CampgroundId -> Month -> m Request
+fetchCampgroundReq cid month = do
+  day <-
+    maybe
+      (throwM . stringException $ "failed to convert month " <> show month <> " to day")
+      pure
+      $ fromMonthDayValid month 1
   let dayStr = BC8.pack . formatTime defaultTimeLocale dateFormat $ UTCTime day 0
-  fmap setRequestCheckStatus
-    . fmap (setQueryString [("start_date", Just dayStr)])
+  fmap
+    (setRequestCheckStatus . setQueryString [("start_date", Just dayStr)])
     . parseRequest
     $ "https://www.recreation.gov/api/camps/availability/campground/" <> cid <> "/month"
 
@@ -58,13 +84,12 @@ apiCampgroundToCampsites = mapM toCampsite . fmap snd . Map.toList . campsites
 
 toCampsite :: ApiCampsite -> Either String Campsite
 toCampsite ac =
-  Campsite
-    <$> pure ac.campsite_id
-    <*> pure ac.site
-    <*> ( mapM tupleEither
-            . fmap (bimap parseDay parseAvailability)
-            $ Map.toList ac.availabilities
-        )
+  fmap
+    (Campsite (ac.campsite_id) (ac.site))
+    ( mapM tupleEither
+        . fmap (bimap parseDay parseAvailability)
+        $ Map.toList (ac.availabilities)
+    )
 
 parseDay :: String -> Either String Day
 parseDay x =
