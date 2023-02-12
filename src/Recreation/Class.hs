@@ -1,14 +1,15 @@
 module Recreation.Class where
 
-import Data.Time (Day)
 import Recreation.Types
-
-type StartDate = Day
-
-type EndDate = Day
+  ( CampgroundId,
+    Campsite,
+    EndDate,
+    StartDate,
+  )
 
 class RecreationClient m where
-  getCampgroundAvailability :: CampgroundId -> m [Campsite]
+  getCampgroundAvailability :: CampgroundId -> StartDate -> EndDate -> m [Campsite]
 
 class Notifier m where
   notifyAvailability :: [Campsite] -> m ()
+  notifyNoAvailability :: m ()

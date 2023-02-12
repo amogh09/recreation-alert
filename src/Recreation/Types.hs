@@ -5,11 +5,19 @@ import Data.Time (Day)
 data Availability = Available | NotAvailable
   deriving (Show, Eq)
 
+isAvailable :: Availability -> Bool
+isAvailable Available = True
+isAvailable _ = False
+
 type CampgroundId = String
 
 type Availabilities = [(Day, Availability)]
 
 type Site = String
+
+type StartDate = Day
+
+type EndDate = Day
 
 data Campsite = Campsite
   { campsiteId :: !String,

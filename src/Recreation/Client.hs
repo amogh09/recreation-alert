@@ -19,11 +19,12 @@ import Data.Time.Format.ISO8601 (iso8601ParseM)
 import GHC.Generics (Generic)
 import Network.HTTP.Client.Conduit (Request, setQueryString, setRequestCheckStatus)
 import Network.HTTP.Simple (getResponseBody, httpJSON, parseRequest)
-import Recreation.Class (EndDate, StartDate)
 import Recreation.Types
   ( Availability (..),
     CampgroundId,
     Campsite (Campsite),
+    EndDate,
+    StartDate,
   )
 import UnliftIO (fromEither, stringException)
 

@@ -1,27 +1,34 @@
-module MyLib (someFunc) where
+module MyLib (go) where
 
-import Control.Monad (unless)
 import Data.Functor.Contravariant (Predicate (Predicate))
-import Data.Time (Day, DayOfWeek, dayOfWeek)
-import Recreation.Class
+import Data.Time (Day)
+import Recreation.Class (Notifier (..), RecreationClient (..))
 import Recreation.Types
-
-someFunc :: IO ()
-someFunc = putStrLn "Hello Haskell"
+  ( CampgroundId,
+    Campsite (availabilities),
+    EndDate,
+    StartDate,
+    isAvailable,
+    mapAvailabilities,
+  )
 
 go ::
   (Monad m, RecreationClient m, Notifier m) =>
   Predicate Campsite ->
   Predicate Day ->
   CampgroundId ->
+  StartDate ->
+  EndDate ->
   m ()
-go cp dp cid = do
-  campsites <- availableCampsites cp dp <$> getCampgroundAvailability cid
-  unless (null campsites) $ notifyAvailability campsites
+go cp dp cid s e = do
+  campsites <- availableCampsites cp dp <$> getCampgroundAvailability cid s e
+  if null campsites
+    then notifyNoAvailability
+    else notifyAvailability campsites
 
 availableCampsites ::
   Predicate Campsite -> Predicate Day -> [Campsite] -> [Campsite]
 availableCampsites (Predicate cp) (Predicate dp) =
   filter (not . null . availabilities)
-    . map (mapAvailabilities $ filter (dp . fst))
+    . map (mapAvailabilities $ filter (isAvailable . snd) . filter (dp . fst))
     . filter cp

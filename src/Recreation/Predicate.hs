@@ -1,4 +1,4 @@
-module Recreation.Predicate () where
+module Recreation.Predicate (mkDayPredicate, siteIn) where
 
 import Data.Functor.Contravariant (Predicate (Predicate))
 import Data.Time (Day, DayOfWeek, dayOfWeek)

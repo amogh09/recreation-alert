@@ -60,7 +60,7 @@ common warnings
 common extensions
     default-extensions:
         OverloadedStrings, DeriveGeneric, OverloadedRecordDot,
-        DuplicateRecordFields
+        DuplicateRecordFields, FlexibleInstances
 
 library
     -- Import common warning flags.
@@ -70,12 +70,12 @@ library
     exposed-modules:
         MyLib,
         Recreation.Types,
+        Recreation.Predicate,
+        Recreation.Class,
         Recreation.Client
 
     -- Modules included in this library but not exported.
-    other-modules:
-        Recreation.Predicate,
-        Recreation.Class
+    -- other-modules:
 
     build-depends:
         base ^>=4.16.3.0,
@@ -97,14 +97,14 @@ library
 
 executable recreation-alert
     -- Import common warning flags.
-    import:           warnings
+    import:           warnings, extensions
 
     -- .hs or .lhs file containing the Main module.
     main-is:          Main.hs
 
     -- Modules included in this executable, other than Main.
     other-modules:
-        Env
+        Env, CLI
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
@@ -112,6 +112,9 @@ executable recreation-alert
     -- Other library packages from which modules are imported.
     build-depends:
         base ^>=4.16.3.0,
+        mtl ^>=2.3.1,
+        optparse-applicative ^>=0.17.0.0,
+        time ^>=1.12.2,
         recreation-alert
 
     -- Directories containing source files.
