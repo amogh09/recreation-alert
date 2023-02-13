@@ -2,6 +2,7 @@ module Main where
 
 import CLI (Args (..), opts)
 import Control.Monad.Reader (ReaderT (runReaderT))
+import Data.Functor.Contravariant (Predicate (Predicate))
 import Data.Time.Calendar
 import Env (mkEnvFromConfig)
 import MyLib (go)
@@ -13,15 +14,22 @@ import Text.Printf (printf)
 main :: IO ()
 main = do
   args <- execParser opts
-  let campsitePred = siteIn [printf "A%03d" i | i <- [11 .. 28 :: Int]]
-      dayPred =
+  let dayPred =
         mkDayPredicate args.startDate args.endDate [Friday .. Sunday]
   env <- mkEnvFromConfig
   runReaderT
     ( go
-        campsitePred
-        dayPred
-        (Campground args.campgroundId args.campgroundName)
+        [ Campground
+            "232466"
+            "Cougar Rock"
+            (Predicate $ const True)
+            dayPred,
+          Campground
+            "232464"
+            "Kalaloch"
+            (siteIn [printf "A%03d" i | i <- [11 .. 28 :: Int]])
+            dayPred
+        ]
         args.startDate
         args.endDate
     )

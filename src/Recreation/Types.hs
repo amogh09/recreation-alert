@@ -1,5 +1,6 @@
 module Recreation.Types where
 
+import Data.Functor.Contravariant (Predicate)
 import Data.Time (Day)
 
 data Availability = Available | NotAvailable
@@ -17,7 +18,12 @@ type StartDate = Day
 
 type EndDate = Day
 
-data Campground = Campground {id :: !String, name :: !String}
+data Campground = Campground
+  { id :: !String,
+    name :: !String,
+    campsitePredicate :: Predicate Campsite,
+    dayPredicate :: Predicate Day
+  }
 
 data Campsite = Campsite
   { campsiteId :: !String,

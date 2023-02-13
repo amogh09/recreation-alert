@@ -11,6 +11,7 @@ import GHC.Generics (Generic)
 import qualified Pushbullet.Notifier as PushBullet
 import Recreation.Class (Notifier, RecreationClient, getCampgroundAvailability, notifyAvailability, notifyNoAvailability)
 import Recreation.Client (fetchCampgroundForRange)
+import Recreation.Types (Campground (name))
 import System.FilePath ((</>))
 import UnliftIO (MonadIO, fromEither, stringException)
 import UnliftIO.Directory (getHomeDirectory)
@@ -26,11 +27,14 @@ instance RecreationClient (ReaderT Env IO) where
 
 instance Notifier (ReaderT Env IO) where
   notifyAvailability c cs = do
-    liftIO $ putStrLn "Availability found!"
+    liftIO $ putStrLn $ "Availability found for " <> c.name <> "!"
     token <- asks pushBulletToken
     liftIO . PushBullet.notifyAvailability token c $ cs
 
-  notifyNoAvailability = liftIO $ putStrLn "No availability found :("
+  notifyNoAvailability c =
+    liftIO
+      . putStrLn
+      $ "No availability found for " <> c.name <> " :("
 
 defaultConfigPath :: MonadIO m => m FilePath
 defaultConfigPath =

@@ -5,9 +5,7 @@ import Recreation.Types
 
 data Args = Args
   { startDate :: StartDate,
-    endDate :: EndDate,
-    campgroundId :: String,
-    campgroundName :: String
+    endDate :: EndDate
   }
 
 args :: Parser Args
@@ -27,21 +25,12 @@ args =
           <> metavar "YYYY-MM-DD"
           <> help "End date for the campsite search"
       )
-    <*> strOption
-      ( long "campground-id"
-          <> short 'c'
-          <> metavar "STRING"
-          <> help "Campground ID for the campsite search"
-      )
-    <*> strOption
-      ( long "campground-name"
-          <> short 'n'
-          <> metavar "STRING"
-          <> help "Campground name for the campsite search"
-      )
 
 opts :: ParserInfo Args
 opts =
   info
     (args <**> helper)
-    (fullDesc <> progDesc "Recreation.gov campsite search" <> header "recreation-alert")
+    ( fullDesc
+        <> progDesc "Recreation.gov campsite search"
+        <> header "recreation-alert"
+    )
