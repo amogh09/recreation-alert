@@ -13,37 +13,32 @@ if &shortmess =~ 'A'
 else
   set shortmess=aoO
 endif
-badd +1 test/campsite1.json
+badd +31 test/campsite1.json
 badd +2 test/Recreation/ClientSpec.hs
-badd +7359 term://~/stuff/development/recreation-alert//80013:/Users/home/.nix-profile/bin/zsh
+badd +6733 term://~/stuff/development/recreation-alert//80013:/Users/home/.nix-profile/bin/zsh
 badd +10 test/campsite_invalid_1.json
-badd +22 src/Recreation/Client.hs
-badd +1 src/Recreation/Types.hs
+badd +1 src/Recreation/Client.hs
+badd +22 src/Recreation/Types.hs
 badd +3 src/MyLib.hs
-badd +1 recreation-alert.cabal
-badd +17 app/Env.hs
-badd +15 src/Recreation/Class.hs
-badd +16 app/Main.hs
+badd +120 recreation-alert.cabal
+badd +32 app/Env.hs
+badd +14 src/Recreation/Class.hs
+badd +17 app/Main.hs
 badd +33 app/CLI.hs
 badd +1 src/Recreation/Predicate.hs
-badd +0 term://~/stuff/development/recreation-alert//79650:/Users/home/.nix-profile/bin/zsh
+badd +90 term://~/stuff/development/recreation-alert//79650:/Users/home/.nix-profile/bin/zsh
+badd +70 src/Pushbullet/Notifier.hs
+badd +3 ~/.config/recreation-alert.json
+badd +26 .gitignore
 argglobal
 %argdel
-edit app/Main.hs
+edit app/Env.hs
 let s:save_splitbelow = &splitbelow
 let s:save_splitright = &splitright
 set splitbelow splitright
 wincmd _ | wincmd |
 vsplit
 1wincmd h
-wincmd _ | wincmd |
-split
-1wincmd k
-wincmd w
-wincmd w
-wincmd _ | wincmd |
-split
-1wincmd k
 wincmd w
 let &splitbelow = s:save_splitbelow
 let &splitright = s:save_splitright
@@ -54,16 +49,10 @@ set winminheight=0
 set winheight=1
 set winminwidth=0
 set winwidth=1
-exe '1resize ' . ((&lines * 36 + 37) / 74)
-exe 'vert 1resize ' . ((&columns * 117 + 117) / 235)
-exe '2resize ' . ((&lines * 35 + 37) / 74)
-exe 'vert 2resize ' . ((&columns * 117 + 117) / 235)
-exe '3resize ' . ((&lines * 35 + 37) / 74)
-exe 'vert 3resize ' . ((&columns * 117 + 117) / 235)
-exe '4resize ' . ((&lines * 36 + 37) / 74)
-exe 'vert 4resize ' . ((&columns * 117 + 117) / 235)
+exe 'vert 1resize ' . ((&columns * 79 + 79) / 158)
+exe 'vert 2resize ' . ((&columns * 78 + 79) / 158)
 argglobal
-balt app/Env.hs
+balt ~/.config/recreation-alert.json
 setlocal fdm=manual
 setlocal fde=0
 setlocal fmr={{{,}}}
@@ -74,56 +63,12 @@ setlocal fdn=20
 setlocal nofen
 silent! normal! zE
 let &fdl = &fdl
-let s:l = 16 - ((15 * winheight(0) + 18) / 36)
+let s:l = 30 - ((15 * winheight(0) + 16) / 33)
 if s:l < 1 | let s:l = 1 | endif
 keepjumps exe s:l
 normal! zt
-keepjumps 16
-normal! 066|
-wincmd w
-argglobal
-if bufexists(fnamemodify("src/MyLib.hs", ":p")) | buffer src/MyLib.hs | else | edit src/MyLib.hs | endif
-if &buftype ==# 'terminal'
-  silent file src/MyLib.hs
-endif
-balt src/Recreation/Class.hs
-setlocal fdm=manual
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal nofen
-silent! normal! zE
-let &fdl = &fdl
-let s:l = 4 - ((3 * winheight(0) + 17) / 35)
-if s:l < 1 | let s:l = 1 | endif
-keepjumps exe s:l
-normal! zt
-keepjumps 4
+keepjumps 30
 normal! 0
-wincmd w
-argglobal
-if bufexists(fnamemodify("term://~/stuff/development/recreation-alert//79650:/Users/home/.nix-profile/bin/zsh", ":p")) | buffer term://~/stuff/development/recreation-alert//79650:/Users/home/.nix-profile/bin/zsh | else | edit term://~/stuff/development/recreation-alert//79650:/Users/home/.nix-profile/bin/zsh | endif
-if &buftype ==# 'terminal'
-  silent file term://~/stuff/development/recreation-alert//79650:/Users/home/.nix-profile/bin/zsh
-endif
-balt recreation-alert.cabal
-setlocal fdm=manual
-setlocal fde=0
-setlocal fmr={{{,}}}
-setlocal fdi=#
-setlocal fdl=0
-setlocal fml=1
-setlocal fdn=20
-setlocal nofen
-let s:l = 666 - ((34 * winheight(0) + 17) / 35)
-if s:l < 1 | let s:l = 1 | endif
-keepjumps exe s:l
-normal! zt
-keepjumps 666
-normal! 02|
 wincmd w
 argglobal
 if bufexists(fnamemodify("term://~/stuff/development/recreation-alert//80013:/Users/home/.nix-profile/bin/zsh", ":p")) | buffer term://~/stuff/development/recreation-alert//80013:/Users/home/.nix-profile/bin/zsh | else | edit term://~/stuff/development/recreation-alert//80013:/Users/home/.nix-profile/bin/zsh | endif
@@ -139,22 +84,16 @@ setlocal fdl=0
 setlocal fml=1
 setlocal fdn=20
 setlocal nofen
-let s:l = 5334 - ((28 * winheight(0) + 18) / 36)
+let s:l = 8791 - ((32 * winheight(0) + 16) / 33)
 if s:l < 1 | let s:l = 1 | endif
 keepjumps exe s:l
 normal! zt
-keepjumps 5334
-normal! 03|
+keepjumps 8791
+normal! 02|
 wincmd w
-3wincmd w
-exe '1resize ' . ((&lines * 36 + 37) / 74)
-exe 'vert 1resize ' . ((&columns * 117 + 117) / 235)
-exe '2resize ' . ((&lines * 35 + 37) / 74)
-exe 'vert 2resize ' . ((&columns * 117 + 117) / 235)
-exe '3resize ' . ((&lines * 35 + 37) / 74)
-exe 'vert 3resize ' . ((&columns * 117 + 117) / 235)
-exe '4resize ' . ((&lines * 36 + 37) / 74)
-exe 'vert 4resize ' . ((&columns * 117 + 117) / 235)
+2wincmd w
+exe 'vert 1resize ' . ((&columns * 79 + 79) / 158)
+exe 'vert 2resize ' . ((&columns * 78 + 79) / 158)
 tabnext 1
 if exists('s:wipebuf') && len(win_findbuf(s:wipebuf)) == 0 && getbufvar(s:wipebuf, '&buftype') isnot# 'terminal'
   silent exe 'bwipe ' . s:wipebuf

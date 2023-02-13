@@ -72,7 +72,8 @@ library
         Recreation.Types,
         Recreation.Predicate,
         Recreation.Class,
-        Recreation.Client
+        Recreation.Client,
+        Pushbullet.Notifier
 
     -- Modules included in this library but not exported.
     -- other-modules:
@@ -112,7 +113,11 @@ executable recreation-alert
     -- Other library packages from which modules are imported.
     build-depends:
         base ^>=4.16.3.0,
+        bytestring ^>=0.11.3.1,
+        aeson ^>=2.0.3.0,
+        unliftio ^>=0.2.23.0,
         mtl ^>=2.3.1,
+        filepath ^>=1.4.2.2,
         optparse-applicative ^>=0.17.0.0,
         time ^>=1.12.2,
         recreation-alert
