@@ -40,14 +40,14 @@ mkPush msg =
       pushType = "note"
     }
 
-notifyAvailability :: ApiToken -> [Campsite] -> IO ()
-notifyAvailability apiToken =
-  createPush apiToken . mkPush . availabilityMsg
+notifyAvailability :: ApiToken -> Campground -> [Campsite] -> IO ()
+notifyAvailability apiToken c =
+  createPush apiToken . mkPush . availabilityMsg c
 
-availabilityMsg :: [Campsite] -> Message
-availabilityMsg cs =
+availabilityMsg :: Campground -> [Campsite] -> Message
+availabilityMsg c cs =
   Message
-    "Campsites available"
+    ("Campsites available for " <> c.name)
     ( "The following campsites are available:\n"
         <> unlines (campsiteMsg <$> cs)
     )

@@ -1,3 +1,6 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+
+{-# HLINT ignore "Use newtype instead of data" #-}
 module Env (Env (Env), mkEnvFromConfig) where
 
 import Control.Monad.Reader (ReaderT, asks, liftIO)
@@ -22,9 +25,10 @@ instance RecreationClient (ReaderT Env IO) where
     liftIO $ fetchCampgroundForRange cid s e
 
 instance Notifier (ReaderT Env IO) where
-  notifyAvailability cs = do
+  notifyAvailability c cs = do
+    liftIO $ putStrLn "Availability found!"
     token <- asks pushBulletToken
-    liftIO . PushBullet.notifyAvailability token $ cs
+    liftIO . PushBullet.notifyAvailability token c $ cs
 
   notifyNoAvailability = liftIO $ putStrLn "No availability found :("
 

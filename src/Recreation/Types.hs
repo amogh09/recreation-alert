@@ -9,8 +9,6 @@ isAvailable :: Availability -> Bool
 isAvailable Available = True
 isAvailable _ = False
 
-type CampgroundId = String
-
 type Availabilities = [(Day, Availability)]
 
 type Site = String
@@ -18,6 +16,8 @@ type Site = String
 type StartDate = Day
 
 type EndDate = Day
+
+data Campground = Campground {id :: !String, name :: !String}
 
 data Campsite = Campsite
   { campsiteId :: !String,

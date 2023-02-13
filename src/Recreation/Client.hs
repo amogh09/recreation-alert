@@ -21,7 +21,7 @@ import Network.HTTP.Client.Conduit (Request, setQueryString, setRequestCheckStat
 import Network.HTTP.Simple (getResponseBody, httpJSON, parseRequest)
 import Recreation.Types
   ( Availability (..),
-    CampgroundId,
+    Campground (..),
     Campsite (Campsite),
     EndDate,
     StartDate,
@@ -53,22 +53,22 @@ monthsInRange s e = uniqAsc . fmap dayPeriod $ [s .. e]
 uniqAsc :: (Eq a, Ord a) => [a] -> [a]
 uniqAsc = Set.toAscList . Set.fromList
 
-fetchCampgroundForRange :: CampgroundId -> Day -> Day -> IO [Campsite]
-fetchCampgroundForRange cid s e =
-  fmap mconcat . mapM (fetchCampground cid) $ monthsInRange s e
+fetchCampgroundForRange :: Campground -> Day -> Day -> IO [Campsite]
+fetchCampgroundForRange c s e =
+  fmap mconcat . mapM (fetchCampground c) $ monthsInRange s e
 
-fetchCampground :: CampgroundId -> Month -> IO [Campsite]
-fetchCampground cid month =
-  fetchApiCampground cid month
+fetchCampground :: Campground -> Month -> IO [Campsite]
+fetchCampground c month =
+  fetchApiCampground c month
     >>= fromEither . first stringException . apiCampgroundToCampsites
 
-fetchApiCampground :: CampgroundId -> Month -> IO ApiCampground
-fetchApiCampground cid month =
-  fetchCampgroundReq cid month >>= fmap getResponseBody . httpJSON
+fetchApiCampground :: Campground -> Month -> IO ApiCampground
+fetchApiCampground c month =
+  fetchCampgroundReq c month >>= fmap getResponseBody . httpJSON
 
 fetchCampgroundReq ::
-  MonadThrow m => CampgroundId -> Month -> m Request
-fetchCampgroundReq cid month = do
+  MonadThrow m => Campground -> Month -> m Request
+fetchCampgroundReq c month = do
   day <-
     maybe
       (throwM . stringException $ "failed to convert month " <> show month <> " to day")
@@ -78,7 +78,7 @@ fetchCampgroundReq cid month = do
   fmap
     (setRequestCheckStatus . setQueryString [("start_date", Just dayStr)])
     . parseRequest
-    $ "https://www.recreation.gov/api/camps/availability/campground/" <> cid <> "/month"
+    $ "https://www.recreation.gov/api/camps/availability/campground/" <> c.id <> "/month"
 
 apiCampgroundToCampsites :: ApiCampground -> Either String [Campsite]
 apiCampgroundToCampsites = mapM toCampsite . fmap snd . Map.toList . campsites
