@@ -48,9 +48,7 @@ availabilityMsg :: Campground -> [Campsite] -> Message
 availabilityMsg c cs =
   Message
     ("Campsites available for " <> c.name)
-    ( "The following campsites are available:\n"
-        <> unlines (campsiteMsg <$> cs)
-    )
+    (unlines (campsiteMsg <$> cs))
 
 campsiteMsg :: Campsite -> String
 campsiteMsg c =
