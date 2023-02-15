@@ -1,6 +1,6 @@
 module MyLib (go) where
 
-import Control.Monad (forM_, forever)
+import Control.Monad (forM_)
 import Data.Functor.Contravariant (Predicate (Predicate))
 import Data.Time (Day)
 import Recreation.Class (Notifier (..), RecreationClient (..))
@@ -13,7 +13,6 @@ import Recreation.Types
     mapAvailabilities,
   )
 import UnliftIO (MonadIO)
-import UnliftIO.Concurrent (threadDelay)
 
 go ::
   ( RecreationClient m,
@@ -24,13 +23,7 @@ go ::
   StartDate ->
   EndDate ->
   m ()
-go cs s e =
-  forever $ do
-    forM_ cs (\c -> goOnce c s e)
-    threadDelay (minutes 2)
-
-minutes :: Int -> Int
-minutes = (* 60) . (* 1000000)
+go cs s e = forM_ cs (\c -> goOnce c s e)
 
 goOnce ::
   (Monad m, RecreationClient m, Notifier m) =>
