@@ -6,4 +6,7 @@ pkgs.mkShell {
       [ cabal-install haskell-language-server ormolu ]))
     zlib
   ];
+  shellHook = ''
+    export PATH="$HOME/.cabal/bin:$PATH"
+  '';
 }
