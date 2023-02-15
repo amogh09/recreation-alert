@@ -4,7 +4,7 @@ import CLI (Args (..), opts)
 import Control.Monad.Reader (ReaderT (runReaderT))
 import Data.Functor.Contravariant (Predicate (Predicate))
 import Data.Time.Calendar
-import Env (mkEnvFromConfig)
+import Env (loadEnv)
 import MyLib (go)
 import Options.Applicative (execParser)
 import Recreation.Predicate (mkDayPredicate, siteIn)
@@ -16,7 +16,7 @@ main = do
   args <- execParser opts
   let dayPred =
         mkDayPredicate args.startDate args.endDate [Friday .. Sunday]
-  env <- mkEnvFromConfig
+  env <- loadEnv
   runReaderT
     ( go
         [ Campground
