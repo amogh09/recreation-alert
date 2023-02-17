@@ -1,9 +1,12 @@
-FROM haskell:9.2.4
+FROM haskell:9.2.4-slim
 RUN cabal update
-COPY . $HOME/src
+COPY ./*.cabal $HOME/src/
 WORKDIR $HOME/src
-RUN cabal install && cp -Lr ~/.cabal/bin/recreation-alert /recreation-alert
+RUN cabal build --only-dependencies
 
-FROM alpine:latest
-COPY --from=0 /recreation-alert /
-ENTRYPOINT "/bin/sh"
+COPY . $HOME/src/
+RUN cabal install --installdir=. --install-method=copy --overwrite-policy=always
+
+FROM debian:stable-slim
+COPY --from=0 $HOME/src/recreation-alert /
+ENTRYPOINT ["/recreation-alert"]
