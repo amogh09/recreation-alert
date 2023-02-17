@@ -47,8 +47,8 @@ notifyAvailability apiToken c =
 availabilityMsg :: Campground -> [Campsite] -> Message
 availabilityMsg c cs =
   Message
-    ("Campsites available for " <> c.name)
-    (unlines (campsiteMsg <$> cs))
+    (show (length cs) <> " campsites available for " <> c.name)
+    ("First 10 shown below\n" <> unlines (campsiteMsg <$> take 10 cs))
 
 campsiteMsg :: Campsite -> String
 campsiteMsg c =
