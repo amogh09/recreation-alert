@@ -2,8 +2,8 @@ module Recreation.ClientSpec (spec) where
 
 import Data.Aeson (eitherDecodeStrict)
 import qualified Data.ByteString.Char8 as BC8
-import Recreation.Client (toCampsite)
-import Recreation.Types
+import Recreation.Adapter.HttpClient (toCampsite)
+import Recreation.Core.Types
 import Test.Hspec
 
 spec :: Spec
