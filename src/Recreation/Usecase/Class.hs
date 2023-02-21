@@ -1,6 +1,6 @@
-module Recreation.Class where
+module Recreation.Usecase.Class where
 
-import Recreation.Types
+import Recreation.Core.Types
   ( Campground,
     Campsite,
     EndDate,

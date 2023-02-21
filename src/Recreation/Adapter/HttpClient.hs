@@ -1,4 +1,9 @@
-module Recreation.Client (toCampsite, ApiCampsite, fetchCampgroundForRange) where
+module Recreation.Adapter.HttpClient
+  ( toCampsite,
+    ApiCampsite,
+    fetchCampgroundForRange,
+  )
+where
 
 import Control.Monad.Catch (MonadThrow (throwM))
 import Data.Aeson (FromJSON)
@@ -19,7 +24,7 @@ import Data.Time.Format.ISO8601 (iso8601ParseM)
 import GHC.Generics (Generic)
 import Network.HTTP.Client.Conduit (Request, setQueryString, setRequestCheckStatus)
 import Network.HTTP.Simple (getResponseBody, httpJSON, parseRequest)
-import Recreation.Types
+import Recreation.Core.Types
   ( Availability (..),
     Campground (..),
     Campsite (Campsite),

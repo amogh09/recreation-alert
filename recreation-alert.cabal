@@ -68,12 +68,14 @@ library
 
     -- Modules exported by the library.
     exposed-modules:
-        MyLib,
-        Recreation.Types,
-        Recreation.Predicate,
-        Recreation.Class,
-        Recreation.Client,
-        Pushbullet.Notifier
+        Recreation.Adapter.HttpClient
+        Recreation.Adapter.PushbulletNotifier
+
+        Recreation.Usecase.Class
+        Recreation.Usecase.Availability
+
+        Recreation.Core.Predicate
+        Recreation.Core.Types
 
     -- Modules included in this library but not exported.
     -- other-modules:

@@ -7,10 +7,10 @@ import qualified Data.ByteString as BS
 import Data.Time (getCurrentTime)
 import Data.Time.Format.ISO8601 (iso8601Show)
 import GHC.Generics (Generic)
-import qualified Pushbullet.Notifier as PushBullet
-import Recreation.Class (Notifier, RecreationClient, getCampgroundAvailability, notifyAvailability, notifyNoAvailability)
-import Recreation.Client (fetchCampgroundForRange)
-import Recreation.Types (Campground (name))
+import Recreation.Adapter.HttpClient (fetchCampgroundForRange)
+import qualified Recreation.Adapter.PushbulletNotifier as PushBullet
+import Recreation.Core.Types (Campground (name))
+import Recreation.Usecase.Class (Notifier, RecreationClient, getCampgroundAvailability, notifyAvailability, notifyNoAvailability)
 import System.FilePath ((</>))
 import System.IO (hPutStrLn)
 import UnliftIO (Handle, IOMode (AppendMode), MonadIO, fromEither, hFlush, openFile, stringException)

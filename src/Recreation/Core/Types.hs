@@ -1,4 +1,4 @@
-module Recreation.Types where
+module Recreation.Core.Types where
 
 import Data.Functor.Contravariant (Predicate)
 import Data.Time (Day)

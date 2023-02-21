@@ -1,4 +1,4 @@
-module Pushbullet.Notifier (notifyAvailability) where
+module Recreation.Adapter.PushbulletNotifier (notifyAvailability) where
 
 import Control.Monad ((<=<))
 import Control.Monad.Catch (MonadThrow)
@@ -8,7 +8,7 @@ import Data.Functor (void)
 import Network.HTTP.Client.Conduit (parseRequest, setRequestCheckStatus)
 import Network.HTTP.Simple (Request, httpBS, setRequestBodyJSON, setRequestHeaders, setRequestMethod)
 import Network.HTTP.Types (hContentType)
-import Recreation.Types
+import Recreation.Core.Types
 
 type ApiToken = String
 

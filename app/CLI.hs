@@ -1,7 +1,7 @@
 module CLI (Args (..), opts) where
 
 import Options.Applicative
-import Recreation.Types
+import Recreation.Core.Types
 
 data Args = Args
   { startDate :: StartDate,
