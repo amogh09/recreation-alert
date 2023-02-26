@@ -1,14 +1,9 @@
-{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-
-{-# HLINT ignore "Eta reduce" #-}
 module Env (Env, loadEnv) where
 
 import Control.Monad.Reader (ReaderT, asks, liftIO)
-import Data.Aeson
+import Data.Aeson (FromJSON, eitherDecodeStrict)
 import Data.Bifunctor (first)
 import qualified Data.ByteString as BS
-import Data.Time (getCurrentTime)
-import Data.Time.Format.ISO8601 (iso8601Show)
 import GHC.Generics (Generic)
 import Recreation.Adapter.HttpClient (fetchCampgroundForRange)
 import qualified Recreation.Adapter.PushbulletNotifier as PushBullet
@@ -21,13 +16,24 @@ import Recreation.Usecase.Class
     notifyAvailability,
   )
 import System.FilePath ((</>))
-import System.IO (hPutStrLn)
-import UnliftIO (Handle, IOMode (AppendMode), MonadIO, fromEither, hFlush, openFile, stringException)
+import System.IO (stdout)
+import System.Log.Formatter (LogFormatter, simpleLogFormatter)
+import System.Log.Handler (setFormatter)
+import System.Log.Handler.Simple (fileHandler, streamHandler)
+import System.Log.Logger
+  ( Logger,
+    Priority (INFO),
+    getRootLogger,
+    logL,
+    setHandlers,
+    setLevel,
+  )
+import UnliftIO (MonadIO, fromEither, stringException)
 import UnliftIO.Directory (getHomeDirectory)
 
 data Env = Env
   { config :: !Config,
-    logHandle :: Handle
+    logger :: Logger
   }
 
 newtype Config = Config {pushBulletToken :: String}
@@ -45,14 +51,7 @@ instance Notifier (ReaderT Env IO) where
     liftIO . PushBullet.notifyAvailability token c $ cs
 
 instance Trace (ReaderT Env IO) where
-  info msg = logMsg msg
-
-logMsg :: String -> ReaderT Env IO ()
-logMsg msg = do
-  h <- asks logHandle
-  now <- iso8601Show <$> liftIO getCurrentTime
-  liftIO $ hPutStrLn h (now <> " " <> msg)
-  hFlush h
+  info msg = asks logger >>= \l -> liftIO (logL l INFO msg)
 
 defaultConfigPath :: MonadIO m => m FilePath
 defaultConfigPath =
@@ -65,10 +64,21 @@ loadConfig =
     >>= fromEither . first stringException . eitherDecodeStrict
 
 loadEnv :: MonadIO m => m Env
-loadEnv = Env <$> loadConfig <*> initLogHandle
+loadEnv = Env <$> loadConfig <*> defaultLogger
 
 defaultLogFilePath :: MonadIO m => m FilePath
-defaultLogFilePath = (</> "recreation-alert.log") <$> getHomeDirectory
+defaultLogFilePath =
+  liftIO (fmap (</> "recreation-alert.log") getHomeDirectory)
 
-initLogHandle :: MonadIO m => m Handle
-initLogHandle = defaultLogFilePath >>= flip openFile AppendMode
+defaultLogFormat :: LogFormatter a
+defaultLogFormat = simpleLogFormatter "[$utcTime : $prio] $msg"
+
+defaultLogger :: MonadIO m => m Logger
+defaultLogger = liftIO $ do
+  path <- defaultLogFilePath
+  setHandlers
+    <$> sequence
+      [ flip setFormatter defaultLogFormat <$> streamHandler stdout INFO,
+        flip setFormatter defaultLogFormat <$> fileHandler path INFO
+      ]
+    <*> (setLevel INFO <$> liftIO getRootLogger)
