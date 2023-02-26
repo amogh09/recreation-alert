@@ -13,4 +13,6 @@ class RecreationClient m where
 
 class Notifier m where
   notifyAvailability :: Campground -> [Campsite] -> m ()
-  notifyNoAvailability :: Campground -> m ()
+
+class Trace m where
+  info :: String -> m ()

@@ -1,3 +1,6 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+
+{-# HLINT ignore "Eta reduce" #-}
 module Env (Env, loadEnv) where
 
 import Control.Monad.Reader (ReaderT, asks, liftIO)
@@ -9,8 +12,14 @@ import Data.Time.Format.ISO8601 (iso8601Show)
 import GHC.Generics (Generic)
 import Recreation.Adapter.HttpClient (fetchCampgroundForRange)
 import qualified Recreation.Adapter.PushbulletNotifier as PushBullet
-import Recreation.Core.Types (Campground (name))
-import Recreation.Usecase.Class (Notifier, RecreationClient, getCampgroundAvailability, notifyAvailability, notifyNoAvailability)
+import Recreation.Usecase.Class
+  ( Notifier,
+    RecreationClient,
+    Trace,
+    getCampgroundAvailability,
+    info,
+    notifyAvailability,
+  )
 import System.FilePath ((</>))
 import System.IO (hPutStrLn)
 import UnliftIO (Handle, IOMode (AppendMode), MonadIO, fromEither, hFlush, openFile, stringException)
@@ -32,16 +41,11 @@ instance RecreationClient (ReaderT Env IO) where
 
 instance Notifier (ReaderT Env IO) where
   notifyAvailability c cs = do
-    h <- asks logHandle
-    logMsg $ "Availability found for " <> c.name <> "!"
-    hFlush h
     token <- asks (pushBulletToken . config)
     liftIO . PushBullet.notifyAvailability token c $ cs
 
-  notifyNoAvailability c = do
-    h <- asks logHandle
-    logMsg $ "No availability found for " <> c.name <> " :("
-    hFlush h
+instance Trace (ReaderT Env IO) where
+  info msg = logMsg msg
 
 logMsg :: String -> ReaderT Env IO ()
 logMsg msg = do
