@@ -81,4 +81,4 @@ defaultLogger = liftIO $ do
       [ flip setFormatter defaultLogFormat <$> streamHandler stdout INFO,
         flip setFormatter defaultLogFormat <$> fileHandler path INFO
       ]
-    <*> (setLevel INFO <$> liftIO getRootLogger)
+    <*> (setLevel INFO <$> getRootLogger)
