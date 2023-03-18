@@ -59,7 +59,7 @@ common warnings
 common extensions
     default-extensions:
         OverloadedStrings, DeriveGeneric, OverloadedRecordDot,
-        DuplicateRecordFields, FlexibleInstances
+        DuplicateRecordFields, FlexibleInstances, TemplateHaskell
 
 library
     -- Import common warning flags.
@@ -89,7 +89,8 @@ library
         unliftio ^>=0.2.23.0,
         aeson ^>=2.0.3.0,
         time ^>=1.12.2,
-        http-conduit ^>=2.3.8
+        http-conduit ^>=2.3.8,
+        lens ^>=5.2.2
 
     -- Directories containing source files.
     hs-source-dirs:   src

@@ -1,5 +1,6 @@
 module Recreation.Core.Types where
 
+import Control.Lens (makeLenses)
 import Data.Functor.Contravariant (Predicate)
 import Data.Time (Day)
 
@@ -26,11 +27,10 @@ data Campground = Campground
   }
 
 data Campsite = Campsite
-  { campsiteId :: !String,
-    site :: !Site,
-    availabilities :: !Availabilities
+  { _campsiteId :: !String,
+    _site :: !Site,
+    _availabilities :: !Availabilities
   }
   deriving (Show, Eq)
 
-mapAvailabilities :: (Availabilities -> Availabilities) -> Campsite -> Campsite
-mapAvailabilities f c = c {availabilities = f (availabilities c)}
+makeLenses ''Campsite

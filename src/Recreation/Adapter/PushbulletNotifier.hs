@@ -1,5 +1,6 @@
 module Recreation.Adapter.PushbulletNotifier (notifyAvailability) where
 
+import Control.Lens (view)
 import Control.Monad ((<=<))
 import Control.Monad.Catch (MonadThrow)
 import Data.Aeson
@@ -52,9 +53,9 @@ availabilityMsg c cs =
 
 campsiteMsg :: Campsite -> String
 campsiteMsg c =
-  c.site
+  view site c
     <> " - "
-    <> show (fmap (show . fst) $ c.availabilities)
+    <> show (show . fst <$> view availabilities c)
 
 createPush :: ApiToken -> Push -> IO ()
 createPush apiToken = void . httpBS <=< pushReq apiToken

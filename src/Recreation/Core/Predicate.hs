@@ -5,16 +5,17 @@ module Recreation.Core.Predicate
   )
 where
 
+import Control.Lens (over, view)
 import Data.Functor.Contravariant (Predicate (Predicate))
 import Data.Time (Day, DayOfWeek, dayOfWeek)
 import Recreation.Core.Types
-  ( Campsite (site),
+  ( Campsite,
     EndDate,
     Site,
     StartDate,
     availabilities,
     isAvailable,
-    mapAvailabilities,
+    site,
   )
 
 dayFrom :: Day -> Predicate Day
@@ -27,7 +28,7 @@ dayOfWeekIn :: [DayOfWeek] -> Predicate Day
 dayOfWeekIn ds = Predicate $ (`elem` ds) . dayOfWeek
 
 siteIn :: [Site] -> Predicate Campsite
-siteIn sites = Predicate $ (`elem` sites) . site
+siteIn sites = Predicate $ (`elem` sites) . view site
 
 mkDayPredicate :: StartDate -> EndDate -> [DayOfWeek] -> Predicate Day
 mkDayPredicate startDate endDate daysOfWeek =
@@ -36,6 +37,7 @@ mkDayPredicate startDate endDate daysOfWeek =
 availableCampsites ::
   Predicate Campsite -> Predicate Day -> [Campsite] -> [Campsite]
 availableCampsites (Predicate cp) (Predicate dp) =
-  filter (not . null . availabilities)
-    . map (mapAvailabilities $ filter (isAvailable . snd) . filter (dp . fst))
+  filter (not . null . view availabilities)
+    -- . map (mapAvailabilities $ filter (isAvailable . snd) . filter (dp . fst))
+    . map (over availabilities $ filter (isAvailable . snd) . filter (dp . fst))
     . filter cp
