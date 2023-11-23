@@ -38,6 +38,5 @@ availableCampsites ::
   Predicate Campsite -> Predicate Day -> [Campsite] -> [Campsite]
 availableCampsites (Predicate cp) (Predicate dp) =
   filter (not . null . view availabilities)
-    -- . map (mapAvailabilities $ filter (isAvailable . snd) . filter (dp . fst))
     . map (over availabilities $ filter (isAvailable . snd) . filter (dp . fst))
     . filter cp
