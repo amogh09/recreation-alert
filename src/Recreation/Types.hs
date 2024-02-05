@@ -1,5 +1,6 @@
-module Recreation.Core.Types where
+module Recreation.Types where
 
+import Control.Exception (Exception)
 import Control.Lens (makeLenses)
 import Data.Functor.Contravariant (Predicate)
 import Data.Time (Day)
@@ -34,3 +35,13 @@ data Campsite = Campsite
   deriving (Show, Eq)
 
 makeLenses ''Campsite
+
+newtype StringException = StringException String
+
+instance Show StringException where
+  show (StringException msg) = msg
+
+instance Exception StringException
+
+stringException :: String -> StringException
+stringException = StringException

@@ -1,15 +1,15 @@
 module Main where
 
 import CLI (Args (..), opts)
-import Control.Monad.Reader (ReaderT (runReaderT))
 import Data.Functor.Contravariant (Predicate (Predicate))
 import Data.List ((\\))
 import Data.Time.Calendar
 import Env (loadEnv)
 import Options.Applicative (execParser)
-import Recreation.Core.Predicate (mkDayPredicate, siteIn)
-import Recreation.Core.Types (Campground (Campground))
-import Recreation.Usecase.Availability (go)
+import Recreation.Availability (go)
+import Recreation.Predicate (mkDayPredicate, siteIn)
+import Recreation.Types (Campground (Campground))
+import System.Directory (getHomeDirectory)
 import Text.Printf (printf)
 
 cougarRock :: Predicate Day -> Campground
@@ -25,16 +25,12 @@ ohanapecosh = Campground "232465" "Ohanapecosh Campground" (Predicate $ const Tr
 newHalem :: Predicate Day -> Campground
 newHalem = Campground "234060" "Newhalem Campground" (Predicate $ const True)
 
+devilsGarden :: Predicate Day -> Campground
+devilsGarden = Campground "234059" "Devil's Garden Campground" (Predicate $ const True)
+
 main :: IO ()
 main = do
   args <- execParser opts
-  let dayPred =
-        mkDayPredicate args.startDate args.endDate [Friday .. Sunday]
+  let dayPred = mkDayPredicate args.startDate args.endDate [Monday .. Sunday]
   env <- loadEnv
-  runReaderT
-    ( go
-        [c dayPred | c <- []]
-        args.startDate
-        args.endDate
-    )
-    env
+  go env [c dayPred | c <- [devilsGarden]] args.startDate args.endDate

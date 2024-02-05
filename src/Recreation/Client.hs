@@ -1,13 +1,8 @@
-module Recreation.Adapter.HttpClient
-  ( toCampsite,
-    ApiCampsite,
-    fetchCampgroundForRange,
-  )
-where
+module Recreation.Client (toCampsite, ApiCampsite, fetchCampgroundForRange) where
 
 import Control.Monad.Catch (MonadThrow (throwM))
 import Data.Aeson (FromJSON)
-import Data.Bifunctor (Bifunctor (bimap, first))
+import Data.Bifunctor (Bifunctor (bimap))
 import qualified Data.ByteString.Char8 as BC8
 import Data.Map (Map)
 import qualified Data.Map as Map
@@ -24,14 +19,14 @@ import Data.Time.Format.ISO8601 (iso8601ParseM)
 import GHC.Generics (Generic)
 import Network.HTTP.Client.Conduit (Request, setQueryString, setRequestCheckStatus)
 import Network.HTTP.Simple (getResponseBody, httpJSON, parseRequest)
-import Recreation.Core.Types
+import Recreation.Types
   ( Availability (..),
     Campground (..),
     Campsite (Campsite),
     EndDate,
     StartDate,
+    stringException,
   )
-import UnliftIO (fromEither, stringException)
 
 data ApiCampsite = ApiCampsite
   { campsite_id :: !String,
@@ -64,8 +59,7 @@ fetchCampgroundForRange c s e =
 
 fetchCampground :: Campground -> Month -> IO [Campsite]
 fetchCampground c month =
-  fetchApiCampground c month
-    >>= fromEither . first stringException . apiCampgroundToCampsites
+  fetchApiCampground c month >>= either fail pure . apiCampgroundToCampsites
 
 fetchApiCampground :: Campground -> Month -> IO ApiCampground
 fetchApiCampground c month =

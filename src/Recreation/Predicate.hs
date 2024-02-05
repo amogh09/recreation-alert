@@ -1,14 +1,9 @@
-module Recreation.Core.Predicate
-  ( mkDayPredicate,
-    siteIn,
-    availableCampsites,
-  )
-where
+module Recreation.Predicate (mkDayPredicate, siteIn, availableCampsites) where
 
 import Control.Lens (over, view)
 import Data.Functor.Contravariant (Predicate (Predicate))
 import Data.Time (Day, DayOfWeek, dayOfWeek)
-import Recreation.Core.Types
+import Recreation.Types
   ( Campsite,
     EndDate,
     Site,

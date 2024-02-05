@@ -1,80 +1,37 @@
-module Env (Env, loadEnv) where
+module Env (loadEnv) where
 
-import Control.Monad.Reader (ReaderT, asks, liftIO)
-import Data.Aeson (FromJSON, eitherDecodeStrict)
-import Data.Bifunctor (first)
+import Data.Aeson (eitherDecodeStrict)
 import qualified Data.ByteString as BS
-import GHC.Generics (Generic)
-import Recreation.Adapter.HttpClient (fetchCampgroundForRange)
-import qualified Recreation.Adapter.PushbulletNotifier as PushBullet
-import Recreation.Usecase.Class
-  ( Notifier,
-    RecreationClient,
-    Trace,
-    getCampgroundAvailability,
-    info,
-    notifyAvailability,
-  )
+import Recreation.Availability (Config, Env (Env))
+import System.Directory (getHomeDirectory)
 import System.FilePath ((</>))
 import System.IO (stdout)
 import System.Log.Formatter (LogFormatter, simpleLogFormatter)
 import System.Log.Handler (setFormatter)
 import System.Log.Handler.Simple (fileHandler, streamHandler)
-import System.Log.Logger
-  ( Logger,
-    Priority (INFO),
-    getRootLogger,
-    logL,
-    setHandlers,
-    setLevel,
-  )
-import UnliftIO (MonadIO, fromEither, stringException)
-import UnliftIO.Directory (getHomeDirectory)
+import System.Log.Logger (Logger, Priority (INFO), getRootLogger, setHandlers, setLevel)
 
-data Env = Env
-  { config :: !Config,
-    logger :: Logger
-  }
-
-newtype Config = Config {pushBulletToken :: String}
-  deriving (Show, Generic)
-
-instance FromJSON Config
-
-instance RecreationClient (ReaderT Env IO) where
-  getCampgroundAvailability cid s e =
-    liftIO $ fetchCampgroundForRange cid s e
-
-instance Notifier (ReaderT Env IO) where
-  notifyAvailability c cs = do
-    token <- asks (pushBulletToken . config)
-    liftIO . PushBullet.notifyAvailability token c $ cs
-
-instance Trace (ReaderT Env IO) where
-  info msg = asks logger >>= \l -> liftIO (logL l INFO msg)
-
-defaultConfigPath :: MonadIO m => m FilePath
+defaultConfigPath :: IO FilePath
 defaultConfigPath =
   (</> ".config/recreation-alert.json") <$> getHomeDirectory
 
-loadConfig :: MonadIO m => m Config
+loadConfig :: IO Config
 loadConfig =
   defaultConfigPath
-    >>= liftIO . BS.readFile
-    >>= fromEither . first stringException . eitherDecodeStrict
+    >>= BS.readFile
+    >>= either fail pure . eitherDecodeStrict
 
-loadEnv :: MonadIO m => m Env
-loadEnv = Env <$> loadConfig <*> defaultLogger
+loadEnv :: IO Env
+loadEnv = Env <$> defaultLogger <*> loadConfig
 
-defaultLogFilePath :: MonadIO m => m FilePath
-defaultLogFilePath =
-  liftIO (fmap (</> "recreation-alert.log") getHomeDirectory)
+defaultLogFilePath :: IO FilePath
+defaultLogFilePath = fmap (</> "recreation-alert.log") getHomeDirectory
 
 defaultLogFormat :: LogFormatter a
 defaultLogFormat = simpleLogFormatter "[$utcTime : $prio] $msg"
 
-defaultLogger :: MonadIO m => m Logger
-defaultLogger = liftIO $ do
+defaultLogger :: IO Logger
+defaultLogger = do
   path <- defaultLogFilePath
   setHandlers
     <$> sequence
