@@ -1,13 +1,9 @@
-module Recreation.Adapter.HttpClient
-  ( toCampsite,
-    ApiCampsite,
-    fetchCampgroundForRange,
-  )
-where
+module Recreation.Client (toCampsite, ApiCampsite, fetchCampgroundForRange) where
 
+import Control.Exception (Exception, Handler (Handler), catches, throw)
 import Control.Monad.Catch (MonadThrow (throwM))
 import Data.Aeson (FromJSON)
-import Data.Bifunctor (Bifunctor (bimap, first))
+import Data.Bifunctor (Bifunctor (bimap))
 import qualified Data.ByteString.Char8 as BC8
 import Data.Map (Map)
 import qualified Data.Map as Map
@@ -21,17 +17,19 @@ import Data.Time
   )
 import Data.Time.Calendar.Month (Month, fromMonthDayValid)
 import Data.Time.Format.ISO8601 (iso8601ParseM)
+import Data.Typeable (Typeable)
 import GHC.Generics (Generic)
+import Network.HTTP.Client (HttpException)
 import Network.HTTP.Client.Conduit (Request, setQueryString, setRequestCheckStatus)
 import Network.HTTP.Simple (getResponseBody, httpJSON, parseRequest)
-import Recreation.Core.Types
+import Recreation.Types
   ( Availability (..),
     Campground (..),
     Campsite (Campsite),
     EndDate,
     StartDate,
+    stringException,
   )
-import UnliftIO (fromEither, stringException)
 
 data ApiCampsite = ApiCampsite
   { campsite_id :: !String,
@@ -49,6 +47,13 @@ instance FromJSON ApiCampsite
 
 instance FromJSON ApiCampground
 
+newtype ApiException e = ApiException e
+
+instance Show e => Show (ApiException e) where
+  show (ApiException e) = "API request failed: " <> show e
+
+instance (Typeable e, Show e) => Exception (ApiException e)
+
 dateFormat :: String
 dateFormat = "%FT%T.000Z"
 
@@ -58,18 +63,20 @@ monthsInRange s e = uniqAsc . fmap dayPeriod $ [s .. e]
 uniqAsc :: (Eq a, Ord a) => [a] -> [a]
 uniqAsc = Set.toAscList . Set.fromList
 
+-- Fetches campsites for the campground in the given date range.
+-- Throws ApiException on any API failures.
 fetchCampgroundForRange :: Campground -> Day -> Day -> IO [Campsite]
 fetchCampgroundForRange c s e =
-  fmap mconcat . mapM (fetchCampground c) $ monthsInRange s e
+  (fmap mconcat . mapM (fetchCampground c) $ monthsInRange s e) `catches` [Handler h]
+  where
+    h :: HttpException -> IO [Campsite]
+    h ex = throw $ ApiException ex
 
 fetchCampground :: Campground -> Month -> IO [Campsite]
-fetchCampground c month =
-  fetchApiCampground c month
-    >>= fromEither . first stringException . apiCampgroundToCampsites
+fetchCampground c month = fetchApiCampground c month >>= either fail pure . apiCampgroundToCampsites
 
 fetchApiCampground :: Campground -> Month -> IO ApiCampground
-fetchApiCampground c month =
-  fetchCampgroundReq c month >>= fmap getResponseBody . httpJSON
+fetchApiCampground c month = fetchCampgroundReq c month >>= fmap getResponseBody . httpJSON
 
 fetchCampgroundReq ::
   MonadThrow m => Campground -> Month -> m Request
