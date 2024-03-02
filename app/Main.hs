@@ -9,7 +9,6 @@ import Options.Applicative (execParser)
 import Recreation.Availability (go)
 import Recreation.Predicate (mkDayPredicate, siteIn)
 import Recreation.Types (Campground (Campground))
-import System.Directory (getHomeDirectory)
 import Text.Printf (printf)
 
 cougarRock :: Predicate Day -> Campground

@@ -3,15 +3,7 @@ module Recreation.Predicate (mkDayPredicate, siteIn, availableCampsites) where
 import Control.Lens (over, view)
 import Data.Functor.Contravariant (Predicate (Predicate))
 import Data.Time (Day, DayOfWeek, dayOfWeek)
-import Recreation.Types
-  ( Campsite,
-    EndDate,
-    Site,
-    StartDate,
-    availabilities,
-    isAvailable,
-    site,
-  )
+import Recreation.Types (Campsite, EndDate, Site, StartDate, availabilities, isAvailable, site)
 
 dayFrom :: Day -> Predicate Day
 dayFrom d = Predicate (>= d)

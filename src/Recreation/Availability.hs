@@ -36,4 +36,6 @@ go env cs s e = mapM_ goOnce cs
           <$> fetchCampgroundForRange ground s e
       if null campsites
         then info env.logger $ "Found no availability for " <> ground.name
-        else notifyAvailability env.config.pushBulletToken ground campsites
+        else do
+          info env.logger $ "Found available campsites: " <> show campsites
+          notifyAvailability env.config.pushBulletToken ground campsites

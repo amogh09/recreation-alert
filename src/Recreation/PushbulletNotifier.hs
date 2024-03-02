@@ -1,12 +1,13 @@
 module Recreation.PushbulletNotifier (notifyAvailability, ApiToken) where
 
+import Control.Exception (Exception, Handler (Handler), catches, throw)
 import Control.Lens (view)
 import Control.Monad ((<=<))
 import Control.Monad.Catch (MonadThrow)
 import Data.Aeson
 import qualified Data.ByteString.Char8 as BC8
 import Data.Functor (void)
-import Network.HTTP.Client.Conduit (parseRequest, setRequestCheckStatus)
+import Network.HTTP.Client.Conduit (HttpException, parseRequest, setRequestCheckStatus)
 import Network.HTTP.Simple (Request, httpBS, setRequestBodyJSON, setRequestHeaders, setRequestMethod)
 import Network.HTTP.Types (hContentType)
 import Recreation.Types
@@ -25,6 +26,13 @@ data Message = Message
     body :: !String
   }
 
+newtype NotifyException e = NotifyException e
+
+instance Show e => Show (NotifyException e) where
+  show (NotifyException e) = "Failed to send notification: " <> show e
+
+instance (Exception e) => Exception (NotifyException e)
+
 instance ToJSON Push where
   toJSON push =
     object
@@ -42,8 +50,11 @@ mkPush msg =
     }
 
 notifyAvailability :: ApiToken -> Campground -> [Campsite] -> IO ()
-notifyAvailability apiToken c =
-  createPush apiToken . mkPush . availabilityMsg c
+notifyAvailability apiToken c cs =
+  (createPush apiToken . mkPush . availabilityMsg c $ cs) `catches` [Handler h]
+  where
+    h :: HttpException -> IO ()
+    h = throw . NotifyException
 
 availabilityMsg :: Campground -> [Campsite] -> Message
 availabilityMsg c cs =
