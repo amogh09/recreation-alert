@@ -38,9 +38,9 @@ findAvailability = do
     availableCampsites ground.campsitePredicate ground.dayPredicate
       <$> liftIO (fetchCampgroundForRange ground)
   if null campsites
-    then info $ "Found no availability for " <> ground.name
+    then info $ printf "Found no availabilty for %s" ground.name
     else do
-      info $ "Found available campsites: " <> show campsites
+      info $ printf "Found available campsites: %s" (show campsites)
       liftIO $ notifyAvailability env.config.pushBulletToken ground campsites
 
 info :: (MonadIO m) => String -> ReaderT (Env, Campground) m ()
