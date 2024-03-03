@@ -1,4 +1,4 @@
-module Recreation.Predicate (mkDayPredicate, siteIn, availableCampsites) where
+module Recreation.Predicate (mkDayPredicate, siteIn, availableCampsites, alwaysTrue) where
 
 import Control.Lens (over, view)
 import Data.Functor.Contravariant (Predicate (Predicate))
@@ -27,3 +27,6 @@ availableCampsites (Predicate cp) (Predicate dp) =
   filter (not . null . view availabilities)
     . map (over availabilities $ filter (isAvailable . snd) . filter (dp . fst))
     . filter cp
+
+alwaysTrue :: Predicate a
+alwaysTrue = Predicate $ const True

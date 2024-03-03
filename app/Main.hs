@@ -1,35 +1,64 @@
 module Main where
 
 import CLI (Args (..), opts)
-import Data.Functor.Contravariant (Predicate (Predicate))
+import Control.Monad.Reader (ReaderT (runReaderT))
 import Data.List ((\\))
-import Data.Time.Calendar
 import Env (loadEnv)
 import Options.Applicative (execParser)
 import Recreation.Availability (go)
-import Recreation.Predicate (mkDayPredicate, siteIn)
-import Recreation.Types (Campground (Campground))
+import Recreation.Predicate (alwaysTrue, siteIn)
+import Recreation.Types
 import Text.Printf (printf)
 
-cougarRock :: Predicate Day -> Campground
-cougarRock = Campground "232466" "Cougar Rock" (Predicate $ const True)
+cougarRock :: StartDate -> EndDate -> Campground
+cougarRock s e = Campground "232466" "Cougar Rock" s e alwaysTrue alwaysTrue
 
-kalaloch :: Predicate Day -> Campground
-kalaloch =
-  Campground "232464" "Kalaloch" (siteIn [printf "A%03d" i | i <- [11 .. 28 :: Int] \\ [24]])
+kalaloch :: StartDate -> EndDate -> Campground
+kalaloch s e =
+  Campground
+    { name = "Kalaloch",
+      id = "232464",
+      dayPredicate = alwaysTrue,
+      campsitePredicate = siteIn [printf "A%03d" i | i <- [11 .. 28 :: Int] \\ [24]],
+      startDate = s,
+      endDate = e
+    }
 
-ohanapecosh :: Predicate Day -> Campground
-ohanapecosh = Campground "232465" "Ohanapecosh Campground" (Predicate $ const True)
+ohanapecosh :: StartDate -> EndDate -> Campground
+ohanapecosh s e =
+  Campground
+    { name = "Ohanapecosh Campground",
+      id = "232465",
+      dayPredicate = alwaysTrue,
+      campsitePredicate = alwaysTrue,
+      startDate = s,
+      endDate = e
+    }
 
-newHalem :: Predicate Day -> Campground
-newHalem = Campground "234060" "Newhalem Campground" (Predicate $ const True)
+newHalem :: StartDate -> EndDate -> Campground
+newHalem s e =
+  Campground
+    { name = "Newhalem Campground",
+      id = "234060",
+      dayPredicate = alwaysTrue,
+      campsitePredicate = alwaysTrue,
+      startDate = s,
+      endDate = e
+    }
 
-devilsGarden :: Predicate Day -> Campground
-devilsGarden = Campground "234059" "Devil's Garden Campground" (Predicate $ const True)
+devilsGarden :: StartDate -> EndDate -> Campground
+devilsGarden s e =
+  Campground
+    { name = "Devil's Garden Campground",
+      id = "234059",
+      dayPredicate = alwaysTrue,
+      campsitePredicate = alwaysTrue,
+      startDate = s,
+      endDate = e
+    }
 
 main :: IO ()
 main = do
   args <- execParser opts
-  let dayPred = mkDayPredicate args.startDate args.endDate [Monday .. Sunday]
   env <- loadEnv
-  go env [c dayPred | c <- [devilsGarden]] args.startDate args.endDate
+  runReaderT (go [devilsGarden args.startDate args.endDate]) env

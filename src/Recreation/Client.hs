@@ -65,9 +65,10 @@ uniqAsc = Set.toAscList . Set.fromList
 
 -- Fetches campsites for the campground in the given date range.
 -- Throws ApiException on any API failures.
-fetchCampgroundForRange :: Campground -> Day -> Day -> IO [Campsite]
-fetchCampgroundForRange c s e =
-  (fmap mconcat . mapM (fetchCampground c) $ monthsInRange s e) `catches` [Handler h]
+fetchCampgroundForRange :: Campground -> IO [Campsite]
+fetchCampgroundForRange c =
+  (fmap mconcat . mapM (fetchCampground c) $ monthsInRange c.startDate c.endDate)
+    `catches` [Handler h]
   where
     h :: HttpException -> IO [Campsite]
     h ex = throw $ ApiException ex
