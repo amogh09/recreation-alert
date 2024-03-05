@@ -47,7 +47,7 @@ mkCampgroundSearch cid cname s e cp =
 findAvailabilities :: Env -> [CampgroundSearch] -> IO ()
 findAvailabilities env = mapM_ (\c -> runReaderT findAvailability (env, c))
 
-findAvailability :: (MonadIO m) => ReaderT (Env, CampgroundSearch) m ()
+findAvailability :: (MonadIO m, MonadReader (Env, CampgroundSearch) m) => m ()
 findAvailability = do
   (env, cg) <- ask
   info "Starting search"
@@ -56,9 +56,9 @@ findAvailability = do
     then info $ printf "Found no availabilty for %s" cg.name
     else do
       info $ printf "Found available campsites: %s" (show campsites)
-      liftIO $ notifyAvailability env.config.pushBulletToken cg campsites
+      liftIO $ notifyAvailability (pushBulletToken $ config env) cg campsites
 
-info :: (MonadIO m) => String -> ReaderT (Env, CampgroundSearch) m ()
+info :: (MonadIO m, MonadReader (Env, CampgroundSearch) m) => String -> m ()
 info msg = do
   (env, c) <- ask
   liftIO $ logL env.logger INFO $ printf "%s: %s" (show c) msg

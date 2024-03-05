@@ -20,7 +20,7 @@ common warnings
 common extensions
     default-extensions:
         OverloadedStrings, DeriveGeneric, OverloadedRecordDot,
-        DuplicateRecordFields, FlexibleInstances, TemplateHaskell
+        DuplicateRecordFields, FlexibleInstances
 
 library
     import:           warnings, extensions
