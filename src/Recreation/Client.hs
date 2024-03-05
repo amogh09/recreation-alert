@@ -1,4 +1,4 @@
-module Recreation.Client (ApiCampsite, fetchCampgroundForRange) where
+module Recreation.Client (fetchCampgroundForRange) where
 
 import Control.Exception (Handler (Handler), catches, throw)
 import Control.Monad.Catch (MonadThrow (throwM))
@@ -9,13 +9,20 @@ import Network.HTTP.Client (HttpException)
 import Network.HTTP.Client.Conduit (Request, setQueryString, setRequestCheckStatus)
 import Network.HTTP.Simple (getResponseBody, httpJSON, parseRequest)
 import Recreation.Client.Internal
-import Recreation.Types
+import Recreation.Client.Internal.ApiCampground (ApiCampground)
+import Recreation.Types.CampgroundSearch (CampgroundSearch)
+import qualified Recreation.Types.CampgroundSearch as CampgroundSearch
+import Recreation.Types.Campsite (Campsite)
+import qualified Recreation.Types.StringException as StringException
 
 -- Fetches campsites for the campground in the given date range.
 -- Throws ApiException on any API failures.
 fetchCampgroundForRange :: CampgroundSearch -> IO [Campsite]
 fetchCampgroundForRange c =
-  (fmap mconcat . mapM (fetchCampground c) $ monthsInRange c.startDate c.endDate)
+  ( fmap mconcat
+      . mapM (fetchCampground c)
+      $ monthsInRange (CampgroundSearch.startDate c) (CampgroundSearch.endDate c)
+  )
     `catches` [Handler h]
   where
     h :: HttpException -> IO [Campsite]
@@ -31,11 +38,13 @@ fetchCampgroundReq :: MonadThrow m => CampgroundSearch -> Month -> m Request
 fetchCampgroundReq c month = do
   day <-
     maybe
-      (throwM . stringException $ "failed to convert month " <> show month <> " to day")
+      (throwM . StringException.make $ "failed to convert month " <> show month <> " to day")
       pure
       $ fromMonthDayValid month 1
   let dayStr = BC8.pack . formatTime defaultTimeLocale dateFormat $ UTCTime day 0
   fmap
     (setRequestCheckStatus . setQueryString [("start_date", Just dayStr)])
     . parseRequest
-    $ "https://www.recreation.gov/api/camps/availability/campground/" <> c.id <> "/month"
+    $ "https://www.recreation.gov/api/camps/availability/campground/"
+      <> CampgroundSearch.id c
+      <> "/month"

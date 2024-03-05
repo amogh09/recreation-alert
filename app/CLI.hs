@@ -1,12 +1,7 @@
-module CLI (Args (..), opts) where
+module CLI (opts) where
 
+import Args (Args (Args))
 import Options.Applicative
-import Recreation.Types
-
-data Args = Args
-  { startDate :: StartDate,
-    endDate :: EndDate
-  }
 
 args :: Parser Args
 args =

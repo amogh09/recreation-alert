@@ -12,6 +12,7 @@ module Recreation.Availability
   )
 where
 
+import Control.Monad (forM_)
 import Control.Monad.IO.Class (MonadIO (liftIO))
 import Control.Monad.Reader (MonadReader (ask), ReaderT (runReaderT))
 import Data.Aeson (FromJSON)
@@ -20,7 +21,10 @@ import GHC.Generics (Generic)
 import Recreation.Client (fetchCampgroundForRange)
 import Recreation.Predicate (anyAvailableDayMatching, daysBetween)
 import Recreation.PushbulletNotifier (ApiToken, notifyAvailability)
-import Recreation.Types
+import Recreation.Types.CampgroundSearch (CampgroundSearch (CampgroundSearch))
+import qualified Recreation.Types.CampgroundSearch as CampgroundSearch
+import Recreation.Types.Campsite (Campsite)
+import qualified Recreation.Types.Campsite as Campsite
 import System.Log.Logger (Logger, Priority (INFO), logL)
 import Text.Printf (printf)
 
@@ -34,15 +38,14 @@ data Env = Env
   }
 
 mkCampgroundSearch ::
-  CampgroundId -> CampgroundName -> StartDate -> EndDate -> Predicate Campsite -> CampgroundSearch
-mkCampgroundSearch cid cname s e cp =
+  CampgroundSearch.CampgroundId ->
+  CampgroundSearch.CampgroundName ->
+  CampgroundSearch.StartDate ->
+  CampgroundSearch.EndDate ->
+  Predicate Campsite ->
   CampgroundSearch
-    { id = cid,
-      name = cname,
-      startDate = s,
-      endDate = e,
-      campsitePredicate = anyAvailableDayMatching (daysBetween s e) <> cp
-    }
+mkCampgroundSearch cid cname s e cp =
+  CampgroundSearch cid cname s e (anyAvailableDayMatching (daysBetween s e) <> cp)
 
 findAvailabilities :: Env -> [CampgroundSearch] -> IO ()
 findAvailabilities env = mapM_ (\c -> runReaderT findAvailability (env, c))
@@ -51,11 +54,16 @@ findAvailability :: (MonadIO m, MonadReader (Env, CampgroundSearch) m) => m ()
 findAvailability = do
   (env, cg) <- ask
   info "Starting search"
-  campsites <- filter (getPredicate $ campsitePredicate cg) <$> liftIO (fetchCampgroundForRange cg)
+  campsites <-
+    filter (getPredicate $ CampgroundSearch.campsitePredicate cg)
+      <$> liftIO (fetchCampgroundForRange cg)
   if null campsites
     then info $ printf "Found no availabilty for %s" cg.name
     else do
-      info $ printf "Found available campsites: %s" (show campsites)
+      info $ printf "Found available campsites"
+      forM_ campsites $ \c -> do
+        info $ printf "Site: %s" (Campsite.site c)
+        info $ printf "Availabilities: %s" (show $ Campsite.availableDays c)
       liftIO $ notifyAvailability (pushBulletToken $ config env) cg campsites
 
 info :: (MonadIO m, MonadReader (Env, CampgroundSearch) m) => String -> m ()

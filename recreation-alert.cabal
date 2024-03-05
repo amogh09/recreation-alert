@@ -19,8 +19,7 @@ common warnings
 
 common extensions
     default-extensions:
-        OverloadedStrings, DeriveGeneric, OverloadedRecordDot,
-        DuplicateRecordFields, FlexibleInstances
+        OverloadedStrings, DeriveGeneric, FlexibleInstances
 
 library
     import:           warnings, extensions
@@ -30,7 +29,14 @@ library
         Recreation.PushbulletNotifier
         Recreation.Availability
         Recreation.Predicate
-        Recreation.Types
+        Recreation.Types.CampgroundSearch
+        Recreation.Types.Campsite
+        Recreation.Types.StringException
+    other-modules:
+        Recreation.Client.Internal.ApiCampsite
+        Recreation.Client.Internal.ApiCampground
+        Recreation.Pushbullet.Internal.Message
+        Recreation.Pushbullet.Internal.Push
 
     build-depends:
         base ^>=4.16.3.0,
@@ -54,7 +60,7 @@ executable recreation-alert
     import:           warnings, extensions
     main-is:          Main.hs
     other-modules:
-        Env, CLI
+        Env, CLI, Args
     build-depends:
         base ^>=4.16.3.0,
         bytestring ^>=0.11.3.1,

@@ -3,7 +3,8 @@ module Recreation.PredicateSpec (spec) where
 import Data.Functor.Contravariant (getPredicate)
 import Data.Time (DayOfWeek (Monday, Saturday, Tuesday), fromGregorian)
 import Recreation.Predicate
-import Recreation.Types
+import Recreation.Types.Campsite (Campsite (Campsite))
+import qualified Recreation.Types.Campsite as Campsite
 import Test.Hspec
 
 spec :: Spec
@@ -44,29 +45,14 @@ spec = do
       p (fromGregorian 2024 03 11) `shouldBe` True
   describe "anyAvailableDayMatching" $ do
     it "accepts campsites for which there is an available date matching the date predicate" $ do
-      let c =
-            Campsite
-              { campsiteId = "",
-                site = "",
-                availabilities = [(fromGregorian 2024 03 04, Available)]
-              }
+      let c = Campsite "" "" [(fromGregorian 2024 03 04, Campsite.Available)]
           p = getPredicate $ anyAvailableDayMatching $ dayOfWeekIn [Monday]
       p c `shouldBe` True
     it "rejects a campsite that has no available dates" $ do
-      let c =
-            Campsite
-              { campsiteId = "",
-                site = "",
-                availabilities = [(fromGregorian 2024 03 04, NotAvailable)]
-              }
+      let c = Campsite "" "" [(fromGregorian 2024 03 04, Campsite.NotAvailable)]
           p = getPredicate $ anyAvailableDayMatching alwaysTrue
       p c `shouldBe` False
     it "rejects a campsite that has no available dates matching the date predicate" $ do
-      let c =
-            Campsite
-              { campsiteId = "",
-                site = "",
-                availabilities = [(fromGregorian 2024 03 04, Available)]
-              }
+      let c = Campsite "" "" [(fromGregorian 2024 03 04, Campsite.Available)]
           p = getPredicate $ anyAvailableDayMatching $ dayOfWeekIn [Tuesday]
       p c `shouldBe` False
