@@ -1,7 +1,6 @@
 module Recreation.ClientSpec (spec) where
 
 import Control.Exception (throw)
-import Control.Lens (view)
 import Data.Aeson (decodeStrict, eitherDecodeStrict)
 import qualified Data.ByteString.Char8 as BC8
 import Data.Maybe (fromJust)
@@ -21,9 +20,9 @@ spec = do
               . fromJust
               . decodeStrict
               $ jsonStr
-      view campsiteId campsite `shouldBe` "2558"
-      (length . view availabilities) campsite `shouldBe` 7
-      (fmap fst . filter ((== Available) . snd) . view availabilities) campsite
+      campsiteId campsite `shouldBe` "2558"
+      (length . availabilities) campsite `shouldBe` 7
+      (fmap fst . filter ((== Available) . snd) . availabilities) campsite
         `shouldBe` [fromGregorian 2023 5 26, fromGregorian 2023 5 28]
     it "fails to decode invalid availability with an error" $ do
       jsonStr <- BC8.readFile "test/campsite_invalid_1.json"

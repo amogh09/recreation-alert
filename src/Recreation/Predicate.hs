@@ -1,6 +1,5 @@
 module Recreation.Predicate where
 
-import Control.Lens (view)
 import Data.Functor.Contravariant (Predicate (Predicate))
 import Data.Time (Day, DayOfWeek, dayOfWeek)
 import Recreation.Types
@@ -18,7 +17,7 @@ dayOfWeekIn :: [DayOfWeek] -> Predicate Day
 dayOfWeekIn ds = Predicate $ (`elem` ds) . dayOfWeek
 
 siteIn :: [Site] -> Predicate Campsite
-siteIn sites = Predicate $ (`elem` sites) . view site
+siteIn sites = Predicate $ (`elem` sites) . site
 
 alwaysTrue :: Predicate a
 alwaysTrue = Predicate $ const True

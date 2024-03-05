@@ -46,27 +46,27 @@ spec = do
     it "accepts campsites for which there is an available date matching the date predicate" $ do
       let c =
             Campsite
-              { _campsiteId = "",
-                _site = "",
-                _availabilities = [(fromGregorian 2024 03 04, Available)]
+              { campsiteId = "",
+                site = "",
+                availabilities = [(fromGregorian 2024 03 04, Available)]
               }
           p = getPredicate $ anyAvailableDayMatching $ dayOfWeekIn [Monday]
       p c `shouldBe` True
     it "rejects a campsite that has no available dates" $ do
       let c =
             Campsite
-              { _campsiteId = "",
-                _site = "",
-                _availabilities = [(fromGregorian 2024 03 04, NotAvailable)]
+              { campsiteId = "",
+                site = "",
+                availabilities = [(fromGregorian 2024 03 04, NotAvailable)]
               }
           p = getPredicate $ anyAvailableDayMatching alwaysTrue
       p c `shouldBe` False
     it "rejects a campsite that has no available dates matching the date predicate" $ do
       let c =
             Campsite
-              { _campsiteId = "",
-                _site = "",
-                _availabilities = [(fromGregorian 2024 03 04, Available)]
+              { campsiteId = "",
+                site = "",
+                availabilities = [(fromGregorian 2024 03 04, Available)]
               }
           p = getPredicate $ anyAvailableDayMatching $ dayOfWeekIn [Tuesday]
       p c `shouldBe` False

@@ -1,7 +1,6 @@
 module Recreation.PushbulletNotifier (notifyAvailability, ApiToken) where
 
 import Control.Exception (Exception, Handler (Handler), catches, throw)
-import Control.Lens (view)
 import Control.Monad ((<=<))
 import Control.Monad.Catch (MonadThrow)
 import Data.Aeson
@@ -63,10 +62,7 @@ availabilityMsg c cs =
     ("First 10 shown below\n" <> unlines (campsiteMsg <$> take 10 cs))
 
 campsiteMsg :: Campsite -> String
-campsiteMsg c =
-  view site c
-    <> " - "
-    <> show (show . fst <$> view availabilities c)
+campsiteMsg c = site c <> " - " <> show (show . fst <$> availabilities c)
 
 createPush :: ApiToken -> Push -> IO ()
 createPush apiToken = void . httpBS <=< pushReq apiToken

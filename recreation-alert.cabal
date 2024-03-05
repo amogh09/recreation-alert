@@ -45,7 +45,6 @@ library
         time ^>=1.12.2,
         http-conduit ^>=2.3.8,
         http-client ^>= 0.7.14,
-        lens ^>=5.2.2
 
     hs-source-dirs:   src
 
@@ -86,5 +85,4 @@ test-suite recreation-alert-test
         time ^>=1.12.2,
         bytestring ^>=0.11.3.1,
         aeson ^>=2.0.3.0,
-        lens ^>=5.2.2,
         recreation-alert
