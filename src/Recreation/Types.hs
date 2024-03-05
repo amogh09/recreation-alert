@@ -1,7 +1,7 @@
 module Recreation.Types where
 
 import Control.Exception (Exception)
-import Control.Lens (makeLenses)
+import Control.Lens (makeLenses, view)
 import Data.Functor.Contravariant (Predicate)
 import Data.Time (Day)
 import Text.Printf (printf)
@@ -21,16 +21,19 @@ type StartDate = Day
 
 type EndDate = Day
 
-data Campground = Campground
-  { id :: !String,
-    name :: !String,
+type CampgroundName = String
+
+type CampgroundId = String
+
+data CampgroundSearch = CampgroundSearch
+  { id :: !CampgroundId,
+    name :: !CampgroundName,
     startDate :: StartDate,
     endDate :: EndDate,
-    campsitePredicate :: Predicate Campsite,
-    dayPredicate :: Predicate Day
+    campsitePredicate :: Predicate Campsite
   }
 
-instance Show Campground where
+instance Show CampgroundSearch where
   show c = printf "%s (%s to %s)" c.name (show c.startDate) (show c.endDate)
 
 data Campsite = Campsite
@@ -41,6 +44,10 @@ data Campsite = Campsite
   deriving (Show, Eq)
 
 makeLenses ''Campsite
+
+-- Returns all available days for the campsite.
+campsiteAvailableDays :: Campsite -> [Day]
+campsiteAvailableDays = fmap fst . filter (isAvailable . snd) . view availabilities
 
 newtype StringException = StringException String
 

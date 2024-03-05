@@ -49,14 +49,14 @@ mkPush msg =
       pushType = "note"
     }
 
-notifyAvailability :: ApiToken -> Campground -> [Campsite] -> IO ()
+notifyAvailability :: ApiToken -> CampgroundSearch -> [Campsite] -> IO ()
 notifyAvailability apiToken c cs =
   (createPush apiToken . mkPush . availabilityMsg c $ cs) `catches` [Handler h]
   where
     h :: HttpException -> IO ()
     h = throw . NotifyException
 
-availabilityMsg :: Campground -> [Campsite] -> Message
+availabilityMsg :: CampgroundSearch -> [Campsite] -> Message
 availabilityMsg c cs =
   Message
     (show (length cs) <> " campsites available for " <> c.name)

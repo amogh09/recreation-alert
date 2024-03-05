@@ -1,64 +1,33 @@
 module Main where
 
 import CLI (Args (..), opts)
-import Control.Monad.Reader (ReaderT (runReaderT))
 import Data.List ((\\))
 import Env (loadEnv)
 import Options.Applicative (execParser)
-import Recreation.Availability (go)
+import Recreation.Availability (findAvailabilities, mkCampgroundSearch)
 import Recreation.Predicate (alwaysTrue, siteIn)
 import Recreation.Types
 import Text.Printf (printf)
 
-cougarRock :: StartDate -> EndDate -> Campground
-cougarRock s e = Campground "232466" "Cougar Rock" s e alwaysTrue alwaysTrue
+cougarRock :: StartDate -> EndDate -> CampgroundSearch
+cougarRock s e = mkCampgroundSearch "232466" "Cougar Rock" s e alwaysTrue
 
-kalaloch :: StartDate -> EndDate -> Campground
-kalaloch s e =
-  Campground
-    { name = "Kalaloch",
-      id = "232464",
-      dayPredicate = alwaysTrue,
-      campsitePredicate = siteIn [printf "A%03d" i | i <- [11 .. 28 :: Int] \\ [24]],
-      startDate = s,
-      endDate = e
-    }
+kalaloch :: StartDate -> EndDate -> CampgroundSearch
+kalaloch s e = do
+  let sitePred = siteIn [printf "A%03d" i | i <- [11 .. 28 :: Int] \\ [24]]
+  mkCampgroundSearch "232464" "Kalaloch" s e sitePred
 
-ohanapecosh :: StartDate -> EndDate -> Campground
-ohanapecosh s e =
-  Campground
-    { name = "Ohanapecosh Campground",
-      id = "232465",
-      dayPredicate = alwaysTrue,
-      campsitePredicate = alwaysTrue,
-      startDate = s,
-      endDate = e
-    }
+ohanapecosh :: StartDate -> EndDate -> CampgroundSearch
+ohanapecosh s e = mkCampgroundSearch "232465" "Ohanapecosh Campground" s e alwaysTrue
 
-newHalem :: StartDate -> EndDate -> Campground
-newHalem s e =
-  Campground
-    { name = "Newhalem Campground",
-      id = "234060",
-      dayPredicate = alwaysTrue,
-      campsitePredicate = alwaysTrue,
-      startDate = s,
-      endDate = e
-    }
+newHalem :: StartDate -> EndDate -> CampgroundSearch
+newHalem s e = mkCampgroundSearch "234060" "Newhalem Campground" s e alwaysTrue
 
-devilsGarden :: StartDate -> EndDate -> Campground
-devilsGarden s e =
-  Campground
-    { name = "Devil's Garden Campground",
-      id = "234059",
-      dayPredicate = alwaysTrue,
-      campsitePredicate = alwaysTrue,
-      startDate = s,
-      endDate = e
-    }
+devilsGarden :: StartDate -> EndDate -> CampgroundSearch
+devilsGarden s e = mkCampgroundSearch "234059" "Devil's Garden Campground" s e alwaysTrue
 
 main :: IO ()
 main = do
   args <- execParser opts
   env <- loadEnv
-  runReaderT (go [devilsGarden args.startDate args.endDate]) env
+  findAvailabilities env [devilsGarden args.startDate args.endDate]
