@@ -1,9 +1,3 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE DerivingStrategies #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE OverloadedRecordDot #-}
-
 module Recreation.Availability
   ( findAvailabilities,
     Config (Config),
@@ -13,6 +7,7 @@ module Recreation.Availability
 where
 
 import Control.Monad (forM_)
+import Control.Monad.Catch (MonadCatch)
 import Control.Monad.IO.Class (MonadIO (liftIO))
 import Control.Monad.Reader (MonadReader (ask), ReaderT (runReaderT))
 import Data.Aeson (FromJSON)
@@ -22,7 +17,7 @@ import Recreation.Client (fetchCampgroundForRange)
 import Recreation.Predicate (anyAvailableDayMatching, daysBetween)
 import Recreation.PushbulletNotifier (ApiToken, notifyAvailability)
 import Recreation.Types.CampgroundSearch (CampgroundSearch (CampgroundSearch))
-import qualified Recreation.Types.CampgroundSearch as CampgroundSearch
+import qualified Recreation.Types.CampgroundSearch as CSearch
 import Recreation.Types.Campsite (Campsite)
 import qualified Recreation.Types.Campsite as Campsite
 import System.Log.Logger (Logger, Priority (INFO), logL)
@@ -38,10 +33,10 @@ data Env = Env
   }
 
 mkCampgroundSearch ::
-  CampgroundSearch.CampgroundId ->
-  CampgroundSearch.CampgroundName ->
-  CampgroundSearch.StartDate ->
-  CampgroundSearch.EndDate ->
+  CSearch.CampgroundId ->
+  CSearch.CampgroundName ->
+  CSearch.StartDate ->
+  CSearch.EndDate ->
   Predicate Campsite ->
   CampgroundSearch
 mkCampgroundSearch cid cname s e cp =
@@ -50,23 +45,22 @@ mkCampgroundSearch cid cname s e cp =
 findAvailabilities :: Env -> [CampgroundSearch] -> IO ()
 findAvailabilities env = mapM_ (\c -> runReaderT findAvailability (env, c))
 
-findAvailability :: (MonadIO m, MonadReader (Env, CampgroundSearch) m) => m ()
+type AvailMonad m = (MonadIO m, MonadReader (Env, CampgroundSearch) m, MonadCatch m)
+
+findAvailability :: AvailMonad m => m ()
 findAvailability = do
   (env, cg) <- ask
   info "Starting search"
-  campsites <-
-    filter (getPredicate $ CampgroundSearch.campsitePredicate cg)
-      <$> liftIO (fetchCampgroundForRange cg)
+  campsites <- filter (getPredicate $ CSearch.campsitePredicate cg) <$> fetchCampgroundForRange cg
   if null campsites
-    then info $ printf "Found no availabilty for %s" cg.name
+    then info $ printf "Found no availabilty for %s" (CSearch.name cg)
     else do
       info $ printf "Found available campsites"
       forM_ campsites $ \c -> do
-        info $ printf "Site: %s" (Campsite.site c)
-        info $ printf "Availabilities: %s" (show $ Campsite.availableDays c)
-      liftIO $ notifyAvailability (pushBulletToken $ config env) cg campsites
+        info $ printf "Site %s - %s" (Campsite.site c) (show $ Campsite.availableDays c)
+      notifyAvailability (pushBulletToken $ config env) cg campsites
 
-info :: (MonadIO m, MonadReader (Env, CampgroundSearch) m) => String -> m ()
+info :: AvailMonad m => String -> m ()
 info msg = do
   (env, c) <- ask
-  liftIO $ logL env.logger INFO $ printf "%s: %s" (show c) msg
+  liftIO $ logL (logger env) INFO $ printf "%s: %s" (show c) msg

@@ -19,7 +19,9 @@ common warnings
 
 common extensions
     default-extensions:
-        OverloadedStrings, DeriveGeneric, FlexibleInstances
+        OverloadedStrings, DeriveGeneric, FlexibleInstances,
+        ConstraintKinds, DerivingStrategies, FlexibleContexts,
+        DeriveAnyClass
 
 library
     import:           warnings, extensions

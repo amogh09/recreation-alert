@@ -1,7 +1,7 @@
 module Recreation.Client (fetchCampgroundForRange) where
 
-import Control.Exception (Handler (Handler), catches, throw)
-import Control.Monad.Catch (MonadThrow (throwM))
+import Control.Monad.Catch (Handler (Handler), MonadCatch, MonadThrow (throwM), catches)
+import Control.Monad.IO.Class (MonadIO)
 import qualified Data.ByteString.Char8 as BC8
 import Data.Time (UTCTime (UTCTime), defaultTimeLocale, formatTime)
 import Data.Time.Calendar.Month (Month, fromMonthDayValid)
@@ -15,9 +15,11 @@ import qualified Recreation.Types.CampgroundSearch as CampgroundSearch
 import Recreation.Types.Campsite (Campsite)
 import qualified Recreation.Types.StringException as StringException
 
+type ClientMonad m = (MonadIO m, MonadThrow m, MonadCatch m)
+
 -- Fetches campsites for the campground in the given date range.
 -- Throws ApiException on any API failures.
-fetchCampgroundForRange :: CampgroundSearch -> IO [Campsite]
+fetchCampgroundForRange :: ClientMonad m => CampgroundSearch -> m [Campsite]
 fetchCampgroundForRange c =
   ( fmap mconcat
       . mapM (fetchCampground c)
@@ -25,16 +27,18 @@ fetchCampgroundForRange c =
   )
     `catches` [Handler h]
   where
-    h :: HttpException -> IO [Campsite]
-    h ex = throw $ ApiException ex
+    h :: ClientMonad m => HttpException -> m [Campsite]
+    h = throwM . ApiException
 
-fetchCampground :: CampgroundSearch -> Month -> IO [Campsite]
-fetchCampground c month = fetchApiCampground c month >>= either fail pure . apiCampgroundToCampsites
+fetchCampground :: ClientMonad m => CampgroundSearch -> Month -> m [Campsite]
+fetchCampground c month =
+  fetchApiCampground c month
+    >>= either (throwM . StringException.make) pure . apiCampgroundToCampsites
 
-fetchApiCampground :: CampgroundSearch -> Month -> IO ApiCampground
+fetchApiCampground :: ClientMonad m => CampgroundSearch -> Month -> m ApiCampground
 fetchApiCampground c month = fetchCampgroundReq c month >>= fmap getResponseBody . httpJSON
 
-fetchCampgroundReq :: MonadThrow m => CampgroundSearch -> Month -> m Request
+fetchCampgroundReq :: ClientMonad m => CampgroundSearch -> Month -> m Request
 fetchCampgroundReq c month = do
   day <-
     maybe

@@ -1,8 +1,8 @@
 module Recreation.PushbulletNotifier (notifyAvailability, ApiToken) where
 
-import Control.Exception (Exception, Handler (Handler), catches, throw)
 import Control.Monad ((<=<))
-import Control.Monad.Catch (MonadThrow)
+import Control.Monad.Catch (Exception, Handler (Handler), MonadCatch, MonadThrow (throwM), catches)
+import Control.Monad.IO.Class (MonadIO)
 import qualified Data.ByteString.Char8 as BC8
 import Data.Functor (void)
 import Network.HTTP.Client.Conduit (HttpException, parseRequest, setRequestCheckStatus)
@@ -16,6 +16,8 @@ import Recreation.Types.Campsite (Campsite)
 
 type ApiToken = String
 
+type PBMonad m = (MonadIO m, MonadThrow m, MonadCatch m)
+
 newtype NotifyException e = NotifyException e
 
 instance Show e => Show (NotifyException e) where
@@ -23,17 +25,17 @@ instance Show e => Show (NotifyException e) where
 
 instance (Exception e) => Exception (NotifyException e)
 
-notifyAvailability :: ApiToken -> CampgroundSearch -> [Campsite] -> IO ()
+notifyAvailability :: PBMonad m => ApiToken -> CampgroundSearch -> [Campsite] -> m ()
 notifyAvailability apiToken c cs =
   (createPush apiToken . Push.mkPush . Message.availabilityMsg c $ cs) `catches` [Handler h]
   where
-    h :: HttpException -> IO ()
-    h = throw . NotifyException
+    h :: PBMonad m => HttpException -> m ()
+    h = throwM . NotifyException
 
-createPush :: ApiToken -> Push -> IO ()
+createPush :: PBMonad m => ApiToken -> Push -> m ()
 createPush apiToken = void . httpBS <=< pushReq apiToken
 
-pushReq :: (MonadThrow m) => ApiToken -> Push -> m Request
+pushReq :: PBMonad m => ApiToken -> Push -> m Request
 pushReq apiToken push =
   fmap
     ( setRequestHeaders
